@@ -14,5 +14,5 @@ Dataset dapat diakses pada [dataset](https://github.com/WiseStar282/Changping-Ai
 cara menjalankan dashboard:
 1. Install library
 ``` pip install -r requirements.txt```
-2. Jalankan dashboard ```streamlit run dashboard.py```
+2. Jalankan dashboard ```streamlit run dashboard.py``` atau akses di airquality-changping.streamlit.app
 
