@@ -12,5 +12,7 @@ Dataset dapat diakses pada [dataset](https://github.com/WiseStar282/Changping-Ai
 
 ## Dashboard
 cara menjalankan dashboard:
-```streamlit run dashboard.py```
+1. Install library
+``` pip install -r requirements.txt```
+2. Jalankan dashboard ```streamlit run dashboard.py```
 
