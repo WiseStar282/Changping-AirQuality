@@ -11,22 +11,22 @@ Dataset mencakup berbagai polutan serta parameter cuaca seperti suhu, tekanan ud
 """)
 
 # Load dataset
-df = pd.read_csv("dataset/data_filtered.csv")
+df = pd.read_csv("dataset/filtered_data.csv")
 
 # Sidebar: Filter skala
-st.sidebar.header("Cek Distribusi dan Korelasi Data")
 # Histogram dan Corr Kolom berdasarkan faktor
-faktor = st.sidebar.selectbox("Pilih Faktor", ['Polutan', 'Cuaca'])
-kolom_polutan = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3']
-kolom_cuaca = ['TEMP', 'PRES', 'DEWP', 'WSPM']
-kolom_terpilih = kolom_polutan if faktor == 'Polutan' else kolom_cuaca
+# faktor = st.sidebar.selectbox("Pilih Faktor", ['Polutan', 'Cuaca'])
+# kolom_polutan = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3']
+# kolom_cuaca = ['TEMP', 'PRES', 'DEWP', 'WSPM']
+
+list_kolom = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3','TEMP', 'PRES', 'DEWP','WSPM']
 
 st.sidebar.header("Cek Tren Waktu")
-kolom_pilihan1 = st.sidebar.selectbox("Pilih Kolom untuk Visual Tren", kolom_terpilih, index=kolom_terpilih.index("PM2.5"))
+kolom_pilihan1 = st.sidebar.selectbox("Pilih Kolom untuk Visual Tren", list_kolom, index=list_kolom.index("PM2.5"))
 skala_pilihan1 = st.sidebar.selectbox("Pilih Skala Waktu untuk Visual Tren", ['tahunan', 'bulanan', 'harian'])
 
 st.sidebar.header("Cek 3 Bulan Tertinggi")
-kolom_pilihan2 = st.sidebar.selectbox("Pilih Kolom untuk Bar Chart", kolom_terpilih, index=kolom_terpilih.index("O3"))
+kolom_pilihan2 = st.sidebar.selectbox("Pilih Kolom untuk Bar Chart", list_kolom, index=list_kolom.index("O3"))
 
 st.sidebar.header("Cek Hubungan Antar Faktor")
 kolom_opsi = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3', 'TEMP', 'PRES', 'DEWP', 'RAIN', 'WSPM']
@@ -34,31 +34,58 @@ x_var = st.sidebar.selectbox("Pilih Variabel X", kolom_opsi, index=kolom_opsi.in
 y_var = st.sidebar.selectbox("Pilih Variabel Y", kolom_opsi, index=kolom_opsi.index("O3"))
 
 ###############
-# Ringkasan Statistik
-st.subheader(f"Ringkasan Statistik - Faktor: {faktor}")
-st.dataframe(df[kolom_terpilih].describe().T.round(2))
+## Ringkasan Statistik dan Histogram
+# Buat tab
+kolom_cuaca = ['TEMP', 'PRES', 'DEWP', 'RAIN', 'WSPM']
+kolom_polutan = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3']
+tab_polutan, tab_cuaca = st.tabs(["Polutan", "Cuaca"])
 
-# Visualisasi Distribusi Nilai (Histogram)
-st.subheader(f"Distribusi Nilai - Faktor: {faktor}")
-available_cols = [col for col in kolom_terpilih if col in df.columns]
-n = len(available_cols)
-rows = (n + 2) // 3  # 3 kolom per baris
-fig, axs = plt.subplots(nrows=rows, ncols=3, figsize=(15, 5 * rows))
-axs = axs.flatten()
-for i, col in enumerate(available_cols):
-    axs[i].hist(df[col].dropna(), bins=30, color='skyblue', edgecolor='black')
-    axs[i].set_title(col)
-    axs[i].set_xlabel('Nilai')
-    axs[i].set_ylabel('Frekuensi')
-for j in range(i + 1, len(axs)):
-    axs[j].axis('off')
-plt.tight_layout()
-st.pyplot(fig)
+# Tab Polutan
+with tab_polutan:
+    st.subheader("Ringkasan Statistik - Polutan")
+    st.dataframe(df[kolom_polutan].describe())
 
+    st.subheader("Distribusi Nilai - Polutan")
+    available_cols = [col for col in kolom_polutan if col in df.columns]
+    n = len(available_cols)
+    rows = (n + 2) // 3
+    fig, axs = plt.subplots(nrows=rows, ncols=3, figsize=(15, 5 * rows))
+    axs = axs.flatten()
+    for i, col in enumerate(available_cols):
+        axs[i].hist(df[col].dropna(), bins=30, color='skyblue', edgecolor='black')
+        axs[i].set_title(col)
+        axs[i].set_xlabel('Nilai')
+        axs[i].set_ylabel('Frekuensi')
+    for j in range(i + 1, len(axs)):
+        axs[j].axis('off')
+    plt.tight_layout()
+    st.pyplot(fig)
+
+# Tab Cuaca
+with tab_cuaca:
+    st.subheader("Ringkasan Statistik - Cuaca")
+    st.dataframe(df[kolom_cuaca].describe())
+
+    st.subheader("Distribusi Nilai - Cuaca")
+    available_cols = [col for col in kolom_cuaca if col in df.columns]
+    n = len(available_cols)
+    rows = (n + 2) // 3
+    fig, axs = plt.subplots(nrows=rows, ncols=3, figsize=(15, 5 * rows))
+    axs = axs.flatten()
+    for i, col in enumerate(available_cols):
+        axs[i].hist(df[col].dropna(), bins=30, color='lightgreen', edgecolor='black')
+        axs[i].set_title(col)
+        axs[i].set_xlabel('Nilai')
+        axs[i].set_ylabel('Frekuensi')
+    for j in range(i + 1, len(axs)):
+        axs[j].axis('off')
+    plt.tight_layout()
+    st.pyplot(fig)
+
+####################
 ######## Visualisasi Heatmap Korelasi
 st.subheader("Korelasi Antar Variabel")
-kolom_semua = kolom_polutan + kolom_cuaca
-corr_matrix = df[kolom_semua].corr()
+corr_matrix = df[list_kolom].corr()
 fig, ax = plt.subplots(figsize=(12, 6))
 sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, ax=ax)
 plt.title('Heatmap Korelasi Antar Variabel', fontsize=14)
