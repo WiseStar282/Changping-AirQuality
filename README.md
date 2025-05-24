@@ -6,7 +6,7 @@ Sumber : [Air Quality Dataset](https://github.com/marceloreis/HTI/tree/master/PR
 Dataset ini merupakan dataset terkait kualitas udara yang disertai dengan informasi waktu, polutan dan faktor iklim. Untuk memahami karakteristik data, berikut adalah deskripsi data yang 
 dikumpulkan dari beberapa sumber.
 
-Kode eksplorasi dapat diakses pada [notebook](./analisis data/Proyek_Analisis_Data.ipynb)
+Kode eksplorasi dapat diakses pada [notebook](https://github.com/WiseStar282/Changping-AirQuality/blob/main/analisis%20data/Proyek_Analisis_Data.ipynb)
 
 Dataset dapat diakses pada [dataset](https://github.com/WiseStar282/Changping-AirQuality/blob/main/Air%20Quality%20Data_Changping.csv)
 
