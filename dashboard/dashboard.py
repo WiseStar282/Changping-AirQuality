@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import warnings
+warnings.filterwarnings("ignore")
 
 # Judul dan deskripsi
 st.title("Dashboard Eksplorasi Data Kualitas Udara - Changping, Beijing")
@@ -13,12 +15,7 @@ Dataset mencakup berbagai polutan serta parameter cuaca seperti suhu, tekanan ud
 # Load dataset
 df = pd.read_csv("dataset/filtered_data.csv")
 
-# Sidebar: Filter skala
-# Histogram dan Corr Kolom berdasarkan faktor
-# faktor = st.sidebar.selectbox("Pilih Faktor", ['Polutan', 'Cuaca'])
-# kolom_polutan = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3']
-# kolom_cuaca = ['TEMP', 'PRES', 'DEWP', 'WSPM']
-
+# Side bar
 list_kolom = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3','TEMP', 'PRES', 'DEWP','WSPM']
 
 st.sidebar.header("Cek Tren Waktu")
@@ -30,8 +27,12 @@ kolom_pilihan2 = st.sidebar.selectbox("Pilih Kolom untuk Bar Chart", list_kolom,
 
 st.sidebar.header("Cek Hubungan Antar Faktor")
 kolom_opsi = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3', 'TEMP', 'PRES', 'DEWP', 'RAIN', 'WSPM']
-x_var = st.sidebar.selectbox("Pilih Variabel X", kolom_opsi, index=kolom_opsi.index("TEMP"))
-y_var = st.sidebar.selectbox("Pilih Variabel Y", kolom_opsi, index=kolom_opsi.index("O3"))
+
+options =  st.sidebar.multiselect(
+    "Pilih Variabel untuk Scatter Plot",
+    options=kolom_opsi,
+    default=['TEMP', 'O3']
+)
 
 ###############
 ## Ringkasan Statistik dan Histogram
@@ -44,8 +45,8 @@ tab_polutan, tab_cuaca = st.tabs(["Polutan", "Cuaca"])
 with tab_polutan:
     st.subheader("Ringkasan Statistik - Polutan")
     st.dataframe(df[kolom_polutan].describe())
-
-    st.subheader("Distribusi Nilai - Polutan")
+    ##############
+    st.subheader("Distribusi Nilai - Polutan (Histogram)")
     available_cols = [col for col in kolom_polutan if col in df.columns]
     n = len(available_cols)
     rows = (n + 2) // 3
@@ -60,13 +61,26 @@ with tab_polutan:
         axs[j].axis('off')
     plt.tight_layout()
     st.pyplot(fig)
+    ############################
+    st.subheader("Distribusi Nilai - Polutan (Boxplot)")
+    fig2, axs2 = plt.subplots(rows, 3, figsize=(15, 4 * rows))
+    axs2 = axs2.flatten()
+    for i, col in enumerate(available_cols):
+        sns.boxplot(y=df[col], ax=axs2[i], color='skyblue')
+        axs2[i].set_title(col)
+        axs2[i].set_xlabel('')
+        axs2[i].set_ylabel('Nilai')
+    for j in range(i + 1, len(axs2)):
+        fig2.delaxes(axs2[j])
+    plt.tight_layout()
+    st.pyplot(fig2)  
 
 # Tab Cuaca
 with tab_cuaca:
     st.subheader("Ringkasan Statistik - Cuaca")
     st.dataframe(df[kolom_cuaca].describe())
-
-    st.subheader("Distribusi Nilai - Cuaca")
+    ##############
+    st.subheader("Distribusi Nilai - Cuaca (Histogram)")
     available_cols = [col for col in kolom_cuaca if col in df.columns]
     n = len(available_cols)
     rows = (n + 2) // 3
@@ -81,18 +95,31 @@ with tab_cuaca:
         axs[j].axis('off')
     plt.tight_layout()
     st.pyplot(fig)
+    ##############
+    st.subheader("Distribusi Nilai - Cuaca (Boxplot)")
+    fig2, axs2 = plt.subplots(rows, 3, figsize=(15, 4 * rows))
+    axs2 = axs2.flatten()
+    for i, col in enumerate(available_cols):
+        sns.boxplot(y=df[col], ax=axs2[i], color='lightgreen')
+        axs2[i].set_title(col)
+        axs2[i].set_xlabel('')
+        axs2[i].set_ylabel('Nilai')
+    for j in range(i + 1, len(axs2)):
+        fig2.delaxes(axs2[j])
+    plt.tight_layout()
+    st.pyplot(fig2)
 
 ####################
 ######## Visualisasi Heatmap Korelasi
 st.subheader("Korelasi Antar Variabel")
 corr_matrix = df[list_kolom].corr()
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, ax=ax)
 plt.title('Heatmap Korelasi Antar Variabel', fontsize=14)
 st.pyplot(fig)
 
 ######## Visualisasi Tren Waktu
-st.subheader(f"Visualisasi Tren {kolom_pilihan1.capitalize()}")
+st.subheader(f"Visualisasi Tren {kolom_pilihan1}")
 def visual_line(df, kolom, skala):
     """
     Menampilkan lineplot dari kolom dan skala yang dipilih.
@@ -140,7 +167,7 @@ def visual_bar(df, kolom):
     - df: DataFrame yang berisi kolom waktu (year, month, day, hour) dan kolom target
     - kolom: Nama kolom yang dipilih (string), misalnya 'O3', 'PM2.5', 'TEMP', dll
     """
-    st.subheader(f"Top 3 Bulan dengan Rata-rata Tertinggi untuk '{kolom}'")
+    st.subheader(f"Top 3 Bulan dengan Rata-rata Tertinggi untuk {kolom}")
 
     # Pastikan kolom datetime dan 'month' ada
     if 'tanggal' not in df.columns:
@@ -198,6 +225,13 @@ def visual_scatter(df, x_var, y_var):
     ax.grid(True)
     st.pyplot(fig)
     
-
-# Visualisasi hubungan
-visual_scatter(df, x_var, y_var)
+# Validasi jumlah pilihan
+if len(options) < 2:
+    st.warning("Pilih **dua variabel** untuk menampilkan scatter plot.")
+elif len(options) == 0:
+    st.warning("Pilih **dua variabel** untuk menampilkan scatter plot.")
+elif len(options) > 2:
+    st.warning("Hanya dua variabel yang diperbolehkan. Silakan kurangi pilihan.")
+else:
+    x_var, y_var = options[0], options[1]
+    visual_scatter(df, x_var, y_var)
